@@ -1,0 +1,38 @@
+import speech_recognition as sr
+from genderize import Genderize
+
+def identify_gender():
+    recognizer = sr.Recognizer()
+    
+    with sr.Microphone() as source:
+        print("Please speak...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+    
+    try:
+        print("Recognizing...")
+        text = recognizer.recognize_google(audio)
+        print("You said:", text)
+        
+        gender = genderize_gender(text)
+        if gender:
+            print("Predicted gender:", gender)
+        else:
+            print("Unable to determine gender.")
+    
+    except sr.UnknownValueError:
+        print("Could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request results; {0}".format(e))
+
+def genderize_gender(text):
+    genderize_client = Genderize()
+    first_name = text.split()[0] if text else ""
+    if first_name:
+        gender_data = genderize_client.get([first_name])
+        if gender_data and 'gender' in gender_data[0]:
+            return gender_data[0]['gender']
+    return None
+
+if __name__ == "__main__":
+    identify_gender()
